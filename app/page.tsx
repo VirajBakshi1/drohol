@@ -154,7 +154,7 @@ export default function Home() {
               {currentPortfolios.map((portfolio, index) => (
                 <Card key={index} delay={index * 0.1}>
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center flex-shrink-0">
                       <Users className="text-white" size={20} />
                     </div>
                     <p className="text-sm text-gray-700 leading-relaxed">

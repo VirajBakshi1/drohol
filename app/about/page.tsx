@@ -55,7 +55,7 @@ export default function AboutPage() {
               {qualifications.map((qual, index) => (
                 <Card key={index} delay={index * 0.1}>
                   <div className="flex flex-col h-full">
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center mb-4">
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-4">
                       <GraduationCap className="text-white" size={24} />
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 mb-2">

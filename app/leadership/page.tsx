@@ -41,7 +41,7 @@ export default function LeadershipPage() {
                 {currentPortfolios.map((portfolio, index) => (
                   <Card key={index} delay={index * 0.1}>
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center flex-shrink-0">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center flex-shrink-0">
                         <Users className="text-white" size={20} />
                       </div>
                       <p className="text-sm text-gray-700 leading-relaxed">
@@ -103,7 +103,7 @@ export default function LeadershipPage() {
             </div>
 
             {/* Key Responsibilities Highlight */}
-            <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-8 md:p-12">
+            <div className="bg-gradient-to-r from-cyan-600 to-blue-700 rounded-2xl p-8 md:p-12">
               <div className="max-w-3xl mx-auto text-center">
                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
                   Key Leadership Highlights
@@ -112,17 +112,17 @@ export default function LeadershipPage() {
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                     <Users className="mx-auto text-white mb-3" size={32} />
                     <div className="text-2xl font-bold text-white mb-1">9+</div>
-                    <div className="text-sm text-blue-100">Present Portfolios</div>
+                    <div className="text-sm text-cyan-50">Present Portfolios</div>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                     <Award className="mx-auto text-white mb-3" size={32} />
                     <div className="text-2xl font-bold text-white mb-1">7</div>
-                    <div className="text-sm text-blue-100">Professional Affiliations</div>
+                    <div className="text-sm text-cyan-50">Professional Affiliations</div>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                     <Briefcase className="mx-auto text-white mb-3" size={32} />
                     <div className="text-2xl font-bold text-white mb-1">6</div>
-                    <div className="text-sm text-blue-100">Industry Coalitions</div>
+                    <div className="text-sm text-cyan-50">Industry Coalitions</div>
                   </div>
                 </div>
               </div>

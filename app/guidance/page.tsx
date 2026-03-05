@@ -78,7 +78,7 @@ export default function GuidancePage() {
                 {competitionMentorship.map((comp, index) => (
                   <Card key={index} delay={index * 0.1}>
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center flex-shrink-0">
                         <Award className="text-white" size={24} />
                       </div>
                       <div className="flex-1">
@@ -149,7 +149,7 @@ export default function GuidancePage() {
             </div>
 
             {/* Summary Section */}
-            <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-8 md:p-12">
+            <div className="bg-gradient-to-r from-cyan-600 to-blue-700 rounded-2xl p-8 md:p-12">
               <div className="max-w-3xl mx-auto text-center">
                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">
                   Student Guidance Impact
@@ -158,16 +158,16 @@ export default function GuidancePage() {
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                     <Users className="mx-auto text-white mb-3" size={40} />
                     <div className="text-3xl font-bold text-white mb-2">100+</div>
-                    <div className="text-blue-100">Total Projects Guided</div>
-                    <div className="text-sm text-blue-200 mt-2">
+                    <div className="text-cyan-50">Total Projects Guided</div>
+                    <div className="text-sm text-cyan-100 mt-2">
                       Including BTech, MTech, and PhD projects
                     </div>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                     <Trophy className="mx-auto text-white mb-3" size={40} />
                     <div className="text-3xl font-bold text-white mb-2">Multiple</div>
-                    <div className="text-blue-100">National & International Awards</div>
-                    <div className="text-sm text-blue-200 mt-2">
+                    <div className="text-cyan-50">National & International Awards</div>
+                    <div className="text-sm text-cyan-100 mt-2">
                       Including ROBOCON Championships
                     </div>
                   </div>

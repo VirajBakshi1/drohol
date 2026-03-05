@@ -5,11 +5,19 @@ import { motion } from 'framer-motion';
 import { FlaskConical, FileCheck, Trophy, IndianRupee, FileText } from 'lucide-react';
 import { AnimatedSection, SectionHeader } from '@/components/ui/AnimatedSection';
 import { Card } from '@/components/ui/Card';
+import SearchBar from '@/components/ui/SearchBar';
 import { projectsCompleted, projectsOngoing, phdCompleted, phdOngoing, patents } from '@/data/researchData';
 import { grants } from '@/data/resumeData';
 
 export default function ResearchPage() {
   const [activeTab, setActiveTab] = useState<'projects' | 'phd' | 'patents' | 'grants'>('projects');
+
+  // State for filtered data
+  const [filteredProjectsCompleted, setFilteredProjectsCompleted] = useState(projectsCompleted);
+  const [filteredProjectsOngoing, setFilteredProjectsOngoing] = useState(projectsOngoing);
+  const [filteredPhd, setFilteredPhd] = useState([...phdCompleted, ...phdOngoing]);
+  const [filteredPatents, setFilteredPatents] = useState([...patents.awarded, ...patents.filed]);
+  const [filteredGrants, setFilteredGrants] = useState(grants);
 
   return (
     <div className="min-h-screen py-12">
@@ -32,6 +40,43 @@ export default function ResearchPage() {
             Pioneering work in Robotics, Automation, and Mechanical Engineering
           </motion.p>
         </div>
+
+        {/* Search Bar */}
+        {activeTab === 'projects' && (
+          <SearchBar
+            data={[...projectsCompleted, ...projectsOngoing]}
+            onSearch={(filtered) => {
+              setFilteredProjectsCompleted(filtered.filter(p => projectsCompleted.includes(p)));
+              setFilteredProjectsOngoing(filtered.filter(p => projectsOngoing.includes(p)));
+            }}
+            searchFields={['title', 'fundingAgency']}
+            placeholder="Search research projects by title or funding agency..."
+          />
+        )}
+        {activeTab === 'phd' && (
+          <SearchBar
+            data={[...phdCompleted, ...phdOngoing]}
+            onSearch={setFilteredPhd}
+            searchFields={['title', 'scholar', 'university']}
+            placeholder="Search PhD by title, scholar name, or university..."
+          />
+        )}
+        {activeTab === 'patents' && (
+          <SearchBar
+            data={[...patents.awarded, ...patents.filed]}
+            onSearch={setFilteredPatents}
+            searchFields={['title', 'number', 'applicationNumber']}
+            placeholder="Search patents by title or patent number..."
+          />
+        )}
+        {activeTab === 'grants' && (
+          <SearchBar
+            data={grants}
+            onSearch={setFilteredGrants}
+            searchFields={['source', 'purpose']}
+            placeholder="Search grants by source or purpose..."
+          />
+        )}
 
         {/* Tabs */}
         <div className="max-w-4xl mx-auto mb-12">
@@ -68,7 +113,7 @@ export default function ResearchPage() {
               <div>
                 <SectionHeader title="Completed Research Projects" />
                 <div className="space-y-6">
-                  {projectsCompleted.map((project, index) => (
+                  {filteredProjectsCompleted.map((project, index) => (
                     <Card key={index} delay={index * 0.1}>
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center flex-shrink-0">
@@ -99,7 +144,7 @@ export default function ResearchPage() {
               <div>
                 <SectionHeader title="Ongoing Research Projects" />
                 <div className="space-y-6">
-                  {projectsOngoing.map((project, index) => (
+                  {filteredProjectsOngoing.map((project, index) => (
                     <Card key={index} delay={index * 0.1}>
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0">
@@ -140,7 +185,7 @@ export default function ResearchPage() {
               <div>
                 <SectionHeader title="PhD Completed (3)" />
                 <div className="grid md:grid-cols-2 gap-6">
-                  {phdCompleted.map((phd, index) => (
+                  {filteredPhd.filter(p => phdCompleted.includes(p)).map((phd, index) => (
                     <Card key={index} delay={index * 0.1}>
                       <h3 className="font-semibold text-gray-900 mb-2">{phd.title}</h3>
                       <p className="text-sm text-gray-700 mb-1">Scholar: {phd.scholar}</p>
@@ -162,7 +207,7 @@ export default function ResearchPage() {
               <div>
                 <SectionHeader title="PhD In Progress (4)" />
                 <div className="grid md:grid-cols-2 gap-6">
-                  {phdOngoing.map((phd, index) => (
+                  {filteredPhd.filter(p => phdOngoing.includes(p)).map((phd, index) => (
                     <Card key={index} delay={index * 0.1}>
                       <h3 className="font-semibold text-gray-900 mb-2">{phd.title}</h3>
                       <p className="text-sm text-gray-700 mb-1">Scholar: {phd.scholar}</p>
@@ -186,7 +231,7 @@ export default function ResearchPage() {
               <div>
                 <SectionHeader title="Patents Awarded (2)" />
                 <div className="space-y-6">
-                  {patents.awarded.map((patent, index) => (
+                  {filteredPatents.filter(p => patents.awarded.includes(p)).map((patent, index) => (
                     <Card key={index} delay={index * 0.1}>
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center flex-shrink-0">
@@ -214,7 +259,7 @@ export default function ResearchPage() {
               <div>
                 <SectionHeader title="Patents Filed (2)" />
                 <div className="space-y-6">
-                  {patents.filed.map((patent, index) => (
+                  {filteredPatents.filter(p => patents.filed.includes(p)).map((patent, index) => (
                     <Card key={index} delay={index * 0.1}>
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
@@ -248,7 +293,7 @@ export default function ResearchPage() {
                 subtitle="Total funding received: ₹3+ Crores"
               />
               <div className="space-y-6">
-                {grants.map((grant, index) => (
+                {filteredGrants.map((grant, index) => (
                   <Card key={index} delay={index * 0.1}>
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center flex-shrink-0">

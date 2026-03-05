@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { BookOpen, FileText, Globe } from 'lucide-react';
 import { AnimatedSection, SectionHeader } from '@/components/ui/AnimatedSection';
 import { Card, StatCard } from '@/components/ui/Card';
+import SearchBar from '@/components/ui/SearchBar';
 import {
   books,
   internationalJournals,
@@ -18,6 +19,13 @@ type FilterType = 'all' | 'books' | 'journals' | 'conferences';
 
 export default function PublicationsPage() {
   const [filter, setFilter] = useState<FilterType>('all');
+
+  // State for filtered data
+  const [filteredBooks, setFilteredBooks] = useState(books);
+  const [filteredIntlJournals, setFilteredIntlJournals] = useState(internationalJournals);
+  const [filteredNatlJournals, setFilteredNatlJournals] = useState(nationalJournals);
+  const [filteredIntlConf, setFilteredIntlConf] = useState(internationalConferences);
+  const [filteredNatlConf, setFilteredNatlConf] = useState(nationalConferences);
 
   return (
     <div className="min-h-screen py-12">
@@ -49,6 +57,20 @@ export default function PublicationsPage() {
           <StatCard number={publicationStats.totalInternationalConferences.toString()} label="Intl. Conf." />
           <StatCard number={publicationStats.totalNationalConferences.toString()} label="Natl. Conf." />
         </div>
+
+        {/* Search Bar */}
+        <SearchBar
+          data={[...books, ...internationalJournals, ...nationalJournals, ...internationalConferences, ...nationalConferences]}
+          onSearch={(filtered) => {
+            setFilteredBooks(filtered.filter(p => books.includes(p)));
+            setFilteredIntlJournals(filtered.filter(p => internationalJournals.includes(p)));
+            setFilteredNatlJournals(filtered.filter(p => nationalJournals.includes(p)));
+            setFilteredIntlConf(filtered.filter(p => internationalConferences.includes(p)));
+            setFilteredNatlConf(filtered.filter(p => nationalConferences.includes(p)));
+          }}
+          searchFields={['title', 'authors', 'journal', 'conference', 'publisher']}
+          placeholder="Search publications by title, author, journal, or conference..."
+        />
 
         {/* Filters */}
         <div className="max-w-3xl mx-auto mb-12">
@@ -84,7 +106,7 @@ export default function PublicationsPage() {
               <div>
                 <SectionHeader title="Books" />
                 <div className="space-y-4">
-                  {books.map((book, index) => (
+                  {filteredBooks.map((book, index) => (
                     <Card key={index} delay={index * 0.1}>
                       <div className="flex items-start gap-4">
                         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center flex-shrink-0">
@@ -114,10 +136,10 @@ export default function PublicationsPage() {
                 <div>
                   <SectionHeader title="International Journals (26)" />
                   <div className="space-y-4">
-                    {internationalJournals.map((paper, index) => (
+                    {filteredIntlJournals.map((paper, index) => (
                       <Card key={index} delay={index * 0.05}>
                         <div className="flex items-start gap-4">
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center flex-shrink-0">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center flex-shrink-0">
                             <FileText className="text-white" size={20} />
                           </div>
                           <div className="flex-1">
@@ -151,7 +173,7 @@ export default function PublicationsPage() {
                 <div>
                   <SectionHeader title="National Journals (3)" />
                   <div className="space-y-4">
-                    {nationalJournals.map((paper, index) => (
+                    {filteredNatlJournals.map((paper, index) => (
                       <Card key={index} delay={index * 0.1}>
                         <div className="flex items-start gap-4">
                           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center flex-shrink-0">
@@ -185,7 +207,7 @@ export default function PublicationsPage() {
                   <SectionHeader title="International Conferences (54)" />
                   <p className="text-sm text-gray-600 mb-6">Showing representative sample</p>
                   <div className="space-y-4">
-                    {internationalConferences.map((paper, index) => (
+                    {filteredIntlConf.map((paper, index) => (
                       <Card key={index} delay={index * 0.05}>
                         <div className="flex items-start gap-4">
                           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
@@ -219,7 +241,7 @@ export default function PublicationsPage() {
                 <div>
                   <SectionHeader title="National Conferences (5)" />
                   <div className="space-y-4">
-                    {nationalConferences.map((paper, index) => (
+                    {filteredNatlConf.map((paper, index) => (
                       <Card key={index} delay={index * 0.1}>
                         <div className="flex items-start gap-4">
                           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
