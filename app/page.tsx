@@ -49,13 +49,8 @@ export default function Home() {
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8 }}
-                className="text-center lg:text-left order-1 lg:order-2"
+                className="text-center lg:text-left order-1 lg:order-2 flex flex-col justify-center"
               >
-                <div className="inline-block mb-4">
-                  <span className="text-sm font-semibold text-cyan-700 bg-cyan-50 px-4 py-2 rounded-full border border-cyan-200">
-                    Academic Excellence
-                  </span>
-                </div>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-4 leading-tight">
                   {personalInfo.name}
                 </h1>
@@ -65,7 +60,7 @@ export default function Home() {
                 <p className="text-lg md:text-xl text-slate-700 mb-6 font-medium">
                   {personalInfo.institution}
                 </p>
-                <p className="text-base md:text-lg text-slate-600 leading-relaxed mb-8 max-w-2xl">
+                <p className="text-base md:text-lg text-slate-600 leading-relaxed mb-8 max-w-2xl mx-auto lg:mx-0">
                   {personalInfo.summary}
                 </p>
 
