@@ -25,7 +25,7 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth">
       <body className={poppins.className}>
         <Navbar />
-        <main className="min-h-screen pt-24">
+        <main className="min-h-screen pt-28">
           {children}
         </main>
         <Footer />

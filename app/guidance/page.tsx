@@ -1,12 +1,49 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { GraduationCap, Trophy, Award, Users } from 'lucide-react';
 import { AnimatedSection, SectionHeader } from '@/components/ui/AnimatedSection';
 import { Card, StatCard } from '@/components/ui/Card';
-import { studentStats, studentAchievements, mtechProjects, competitionMentorship } from '@/data/studentsData';
+
+interface StudentAchievement { _id: string; achievement: string; students: string; year: string; prize: string; }
+interface Competition { _id: string; competition: string; years: string; role: string; location?: string; achievements?: string[]; }
+interface StudentProject { _id: string; title: string; student: string; year: string; degree: string; type?: string; }
+interface PersonalInfo { stats: { phdCompleted: number; phdOngoing: number; mtechProjects: number; btechProjects: string; }; }
 
 export default function GuidancePage() {
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfo | null>(null);
+  const [studentAchievements, setStudentAchievements] = useState<StudentAchievement[]>([]);
+  const [competitionMentorship, setCompetitionMentorship] = useState<Competition[]>([]);
+  const [mtechProjects, setMtechProjects] = useState<StudentProject[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/personal-info').then((r) => r.json()),
+      fetch('/api/students/achievements').then((r) => r.json()),
+      fetch('/api/students/competitions').then((r) => r.json()),
+      fetch('/api/students/projects').then((r) => r.json()),
+    ])
+      .then(([info, achievements, competitions, projects]) => {
+        setPersonalInfo(info);
+        setStudentAchievements(achievements);
+        setCompetitionMentorship(competitions);
+        setMtechProjects(projects);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600" />
+      </div>
+    );
+  }
+
+  const stats = personalInfo?.stats ?? ({} as NonNullable<PersonalInfo['stats']>);
+
   return (
     <div className="min-h-screen py-12">
       <div className="container mx-auto px-4">
@@ -31,10 +68,10 @@ export default function GuidancePage() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-16">
-          <StatCard number={studentStats.phdCompleted.toString()} label="PhD Completed" />
-          <StatCard number={studentStats.phdOngoing.toString()} label="PhD Ongoing" />
-          <StatCard number={studentStats.mtechCompleted.toString()} label="MTech Projects" />
-          <StatCard number={studentStats.btechCompleted} label="BTech Projects" />
+          <StatCard number={(stats?.phdCompleted ?? 0).toString()} label="PhD Completed" />
+          <StatCard number={(stats?.phdOngoing ?? 0).toString()} label="PhD Ongoing" />
+          <StatCard number={(stats?.mtechProjects ?? 0).toString()} label="MTech Projects" />
+          <StatCard number={stats?.btechProjects ?? '0'} label="BTech Projects" />
         </div>
 
         <AnimatedSection>
@@ -118,7 +155,7 @@ export default function GuidancePage() {
             <div>
               <SectionHeader
                 title="MTech Projects Guided"
-                subtitle="Sample of 54 completed MTech projects"
+                subtitle="All 58 supervised MTech projects (2005–2025)"
               />
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {mtechProjects.map((project, index) => (

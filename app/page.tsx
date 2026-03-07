@@ -1,41 +1,220 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, BookOpen, Award, Users, FlaskConical } from 'lucide-react';
 import { AnimatedSection, SectionHeader } from '@/components/ui/AnimatedSection';
 import { StatCard, Card } from '@/components/ui/Card';
-import { personalInfo, stats, currentPortfolios } from '@/data/resumeData';
-import { internationalAwards } from '@/data/awardsData';
+
+interface PersonalInfoData {
+  name: string;
+  designation: string;
+  institution: string;
+  qualification: string;
+  summary: string;
+  profileImage: string;
+  currentPortfolios: string[];
+  stats: {
+    academicExperience: string;
+    internationalJournals: number;
+    internationalConferences: number;
+    patentsAwarded: number;
+    grantsReceived: string;
+    researchExperience: string;
+    administrativeExperience: string;
+    industrialExperience: string;
+  };
+}
+
+interface AwardData {
+  _id: string;
+  title: string;
+  year: string;
+  organization: string;
+  description?: string;
+  category: string;
+}
+
+interface HeroSlideData {
+  _id: string;
+  url: string;
+  type: 'image' | 'video';
+  alt: string;
+}
 
 export default function Home() {
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfoData | null>(null);
+  const [internationalAwards, setInternationalAwards] = useState<AwardData[]>([]);
+  const [heroSlides, setHeroSlides] = useState<HeroSlideData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [heroIndex, setHeroIndex] = useState(0);
+
+  useEffect(() => {
+    fetch('/api/hero-slides').then((r) => r.json()).then(setHeroSlides);
+  }, []);
+
+  useEffect(() => {
+    if (heroSlides.length === 0) return;
+    const interval = setInterval(() => {
+      setHeroIndex((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [heroSlides.length]);
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/personal-info').then((r) => r.json()),
+      fetch('/api/awards?category=international').then((r) => r.json()),
+    ])
+      .then(([info, awards]) => {
+        setPersonalInfo(info);
+        setInternationalAwards(awards);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading || !personalInfo?.stats) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600" />
+        {!loading && (
+          <p className="ml-4 text-gray-500 text-sm">
+            Database empty —{' '}
+            <a href="/admin" className="text-cyan-600 underline">go to Admin</a>{' '}
+            and click &quot;Seed Database&quot; to populate content.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  const { stats, currentPortfolios } = personalInfo;
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-24 md:py-36 overflow-hidden" style={{ backgroundColor: '#F5F3F7' }}>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(6,182,212,0.05),transparent_50%)] -z-10" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.05),transparent_50%)] -z-10" />
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-300 to-transparent"></div>
-          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
+      <section className="relative min-h-screen flex items-center overflow-hidden">
+        {/* Background Carousel */}
+        <div className="absolute inset-0">
+          <AnimatePresence>
+            <motion.div
+              key={heroIndex}
+              initial={{ opacity: 0, scale: 1.04 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.4, ease: 'easeInOut' }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={heroSlides[heroIndex]?.url || 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1920&q=80'}
+                alt={heroSlides[heroIndex]?.alt || ''}
+                fill
+                className="object-cover"
+                priority
+                unoptimized
+              />
+            </motion.div>
+          </AnimatePresence>
         </div>
-        <div className="container mx-auto px-4">
+
+        {/* Color backdrop — deep navy/cyan gradient so content pops */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-blue-950/80 to-slate-900/70" />
+        {/* Subtle cyan tint overlay on right side so profile region stays readable */}
+        <div className="absolute inset-0 bg-gradient-to-tl from-cyan-950/40 via-transparent to-transparent" />
+
+        {/* Carousel dot indicators */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+          {heroSlides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setHeroIndex(i)}
+              className={`rounded-full transition-all duration-300 ${
+                i === heroIndex ? 'w-6 h-2 bg-cyan-400' : 'w-2 h-2 bg-white/40 hover:bg-white/70'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="relative z-20 container mx-auto px-4 py-24 md:py-32">
           <div className="max-w-7xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
-              {/* Left side - Profile Image */}
+
+              {/* LEFT — Text Content */}
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8 }}
-                className="flex justify-center lg:justify-end order-2 lg:order-1"
+                transition={{ duration: 0.9, ease: 'easeOut' }}
+                className="text-center lg:text-left order-2 lg:order-1 flex flex-col justify-center"
               >
-                <div className="relative group">
-                  {/* Image container */}
-                  <div className="relative w-72 h-72 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-2xl overflow-hidden shadow-xl group-hover:shadow-2xl transition-all duration-500 group-hover:scale-[1.02]">
+                <motion.span
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="inline-block text-cyan-400 font-semibold text-sm uppercase tracking-widest mb-4"
+                >
+                  Professor &amp; Researcher
+                </motion.span>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
+                  {personalInfo.name}
+                </h1>
+                <p className="text-xl md:text-2xl text-cyan-300 mb-3 font-semibold">
+                  {personalInfo.designation}
+                </p>
+                <p className="text-base md:text-lg text-slate-300 mb-6 font-medium">
+                  {personalInfo.institution}
+                </p>
+                <p className="text-sm md:text-base text-slate-400 leading-relaxed mb-8 max-w-xl mx-auto lg:mx-0">
+                  {personalInfo.summary}
+                </p>
+
+                {/* Quick stats strip */}
+                <div className="flex flex-wrap gap-6 justify-center lg:justify-start mb-8">
+                  {[
+                    { value: stats.academicExperience, label: 'Yrs Experience' },
+                    { value: stats.internationalJournals.toString(), label: 'Intl. Journals' },
+                    { value: stats.patentsAwarded.toString(), label: 'Patents' },
+                  ].map(({ value, label }) => (
+                    <div key={label} className="text-center">
+                      <div className="text-2xl font-bold text-cyan-400">{value}</div>
+                      <div className="text-xs text-slate-400 uppercase tracking-wide">{label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Link
+                    href="/research"
+                    className="group bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-cyan-400 hover:to-blue-500 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+                  >
+                    View Research
+                    <ArrowRight className="inline group-hover:translate-x-1 transition-transform" size={20} />
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="border-2 border-white/30 text-white px-8 py-4 rounded-xl font-semibold hover:border-cyan-400 hover:text-cyan-300 hover:scale-105 transition-all duration-300 backdrop-blur-sm"
+                  >
+                    Contact Me
+                  </Link>
+                </div>
+              </motion.div>
+
+              {/* RIGHT — Profile Image */}
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.9, ease: 'easeOut' }}
+                className="flex justify-center lg:justify-center order-1 lg:order-2"
+              >
+                <div className="relative">
+                  {/* Decorative ring */}
+                  <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-cyan-400/40 via-blue-500/30 to-transparent" />
+                  <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-2xl overflow-hidden">
                     <Image
-                      src="https://0.academia-photos.com/31412733/84850451/73489486/s200_ss.ohol.jpeg"
-                      alt="Dr. Shantipal S. Ohol"
+                      src={personalInfo.profileImage || 'https://0.academia-photos.com/31412733/84850451/73489486/s200_ss.ohol.jpeg'}
+                      alt={personalInfo.name}
                       fill
                       className="object-cover"
                       priority
@@ -44,42 +223,6 @@ export default function Home() {
                 </div>
               </motion.div>
 
-              {/* Right side - Text Content */}
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8 }}
-                className="text-center lg:text-left order-1 lg:order-2 flex flex-col justify-center"
-              >
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-4 leading-tight">
-                  {personalInfo.name}
-                </h1>
-                <p className="text-xl md:text-2xl text-cyan-700 mb-3 font-semibold">
-                  {personalInfo.designation}
-                </p>
-                <p className="text-lg md:text-xl text-slate-700 mb-6 font-medium">
-                  {personalInfo.institution}
-                </p>
-                <p className="text-base md:text-lg text-slate-600 leading-relaxed mb-8 max-w-2xl mx-auto lg:mx-0">
-                  {personalInfo.summary}
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                  <Link
-                    href="/research"
-                    className="group bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-cyan-500/20 hover:shadow-2xl hover:shadow-cyan-500/30 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
-                  >
-                    View Research
-                    <ArrowRight className="inline group-hover:translate-x-1 transition-transform" size={20} />
-                  </Link>
-                  <Link
-                    href="/contact"
-                    className="bg-white backdrop-blur-sm border-2 border-slate-300 text-slate-700 px-8 py-4 rounded-xl font-semibold shadow-lg hover:bg-slate-50 hover:border-cyan-400 hover:scale-105 transition-all duration-300"
-                  >
-                    Contact Me
-                  </Link>
-                </div>
-              </motion.div>
             </div>
           </div>
         </div>

@@ -29,7 +29,7 @@ interface SectionHeaderProps {
   centered?: boolean;
 }
 
-export function SectionHeader({ title, subtitle, centered = false }: SectionHeaderProps) {
+export function SectionHeader({ title, subtitle, centered = true }: SectionHeaderProps) {
   return (
     <div className={`mb-12 ${centered ? 'text-center' : ''}`}>
       <motion.h2
@@ -46,7 +46,7 @@ export function SectionHeader({ title, subtitle, centered = false }: SectionHead
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="text-gray-600 text-lg max-w-2xl"
+          className={`text-gray-600 text-lg max-w-2xl ${centered ? 'mx-auto' : ''}`}
         >
           {subtitle}
         </motion.p>

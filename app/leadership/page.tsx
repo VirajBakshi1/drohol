@@ -1,12 +1,40 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Building2, Award, Briefcase } from 'lucide-react';
 import { AnimatedSection, SectionHeader } from '@/components/ui/AnimatedSection';
 import { Card } from '@/components/ui/Card';
-import { currentPortfolios, presentAffiliations, industryCoalitions } from '@/data/resumeData';
+
+interface Affiliation { _id: string; role: string; organization: string; }
 
 export default function LeadershipPage() {
+  const [portfolios, setPortfolios] = useState<string[]>([]);
+  const [affiliations, setAffiliations] = useState<Affiliation[]>([]);
+  const [coalitions, setCoalitions] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/personal-info').then((r) => r.json()),
+      fetch('/api/leadership/affiliations').then((r) => r.json()),
+    ])
+      .then(([info, affils]) => {
+        setPortfolios(info.currentPortfolios || []);
+        setCoalitions(info.industryCoalitions || []);
+        setAffiliations(affils);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen py-12">
       <div className="container mx-auto px-4">
@@ -38,7 +66,7 @@ export default function LeadershipPage() {
                 subtitle="Current leadership roles and responsibilities"
               />
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {currentPortfolios.map((portfolio, index) => (
+                {portfolios.map((portfolio, index) => (
                   <Card key={index} delay={index * 0.1}>
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center flex-shrink-0">
@@ -60,7 +88,7 @@ export default function LeadershipPage() {
                 subtitle="Active memberships and positions in professional organizations"
               />
               <div className="grid md:grid-cols-2 gap-6">
-                {presentAffiliations.map((affiliation, index) => (
+                {affiliations.map((affiliation, index) => (
                   <Card key={index} delay={index * 0.1}>
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
@@ -87,7 +115,7 @@ export default function LeadershipPage() {
                 subtitle="Advisory and technical positions with industry and organizations"
               />
               <div className="space-y-4">
-                {industryCoalitions.map((coalition, index) => (
+                {coalitions.map((coalition, index) => (
                   <Card key={index} delay={index * 0.1}>
                     <div className="flex items-start gap-4">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center flex-shrink-0">
@@ -111,17 +139,17 @@ export default function LeadershipPage() {
                 <div className="grid md:grid-cols-3 gap-6 mt-8">
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                     <Users className="mx-auto text-white mb-3" size={32} />
-                    <div className="text-2xl font-bold text-white mb-1">9+</div>
+                    <div className="text-2xl font-bold text-white mb-1">{portfolios.length}+</div>
                     <div className="text-sm text-cyan-50">Present Portfolios</div>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                     <Award className="mx-auto text-white mb-3" size={32} />
-                    <div className="text-2xl font-bold text-white mb-1">7</div>
+                    <div className="text-2xl font-bold text-white mb-1">{affiliations.length}</div>
                     <div className="text-sm text-cyan-50">Professional Affiliations</div>
                   </div>
                   <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                     <Briefcase className="mx-auto text-white mb-3" size={32} />
-                    <div className="text-2xl font-bold text-white mb-1">6</div>
+                    <div className="text-2xl font-bold text-white mb-1">{coalitions.length}</div>
                     <div className="text-sm text-cyan-50">Industry Coalitions</div>
                   </div>
                 </div>

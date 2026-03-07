@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         hostname: '0.academia-photos.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
     ],
   },
 };

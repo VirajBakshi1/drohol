@@ -1,0 +1,13 @@
+import { NextRequest } from 'next/server';
+import { PhDStudent } from '@/lib/models/Research';
+import { getAll, createOne } from '@/lib/apiHelpers';
+
+export async function GET(req: NextRequest) {
+  const status = req.nextUrl.searchParams.get('status');
+  const query = status ? { status } : {};
+  return getAll(PhDStudent as Parameters<typeof getAll>[0], query);
+}
+
+export async function POST(req: NextRequest) {
+  return createOne(PhDStudent as Parameters<typeof createOne>[0], req);
+}

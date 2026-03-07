@@ -1,12 +1,52 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { GraduationCap, Briefcase, Award, Users } from 'lucide-react';
 import { AnimatedSection, SectionHeader } from '@/components/ui/AnimatedSection';
 import { Card } from '@/components/ui/Card';
-import { personalInfo, qualifications, experience, professionalMemberships } from '@/data/resumeData';
+
+interface Qualification { _id: string; degree: string; institution: string; university?: string; year?: string; specialization?: string; class?: string; thesis?: string; }
+interface ExperienceItem { _id: string; type: string; organization: string; designation: string; period?: string; duration?: string; responsibilities?: string; }
+interface Membership { _id: string; name: string; type: string; organization: string; year?: string; }
+interface PersonalInfoData { professionalPhilosophy?: string; }
 
 export default function AboutPage() {
+  const [qualifications, setQualifications] = useState<Qualification[]>([]);
+  const [industrial, setIndustrial] = useState<ExperienceItem[]>([]);
+  const [teaching, setTeaching] = useState<ExperienceItem[]>([]);
+  const [memberships, setMemberships] = useState<Membership[]>([]);
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfoData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/personal-info').then((r) => r.json()),
+      fetch('/api/qualifications').then((r) => r.json()),
+      fetch('/api/experience?type=industrial').then((r) => r.json()),
+      fetch('/api/experience?type=teaching').then((r) => r.json()),
+      fetch('/api/leadership/memberships').then((r) => r.json()),
+    ])
+      .then(([info, quals, ind, teach, mems]) => {
+        setPersonalInfo(info);
+        setQualifications(quals);
+        setIndustrial(ind);
+        setTeaching(teach);
+        setMemberships(mems);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600" />
+      </div>
+    );
+  }
+
+  const experience = { industrial, teaching };
+
   return (
     <div className="min-h-screen py-12">
       <div className="container mx-auto px-4">
@@ -35,10 +75,7 @@ export default function AboutPage() {
             <SectionHeader title="Professional Philosophy" />
             <Card>
               <p className="text-gray-700 leading-relaxed">
-                Extreme will-power to work hard with strong determination and focused attitude, having a good aptitude for learning.
-                Good team-worker, adaptable, flexible, and well natured. Having good decision-making and improvisations skills, even under pressure.
-                Self-motivated, committed and with a firm sense of responsibility. Organized, with good spoken and written communication skills.
-                Willingness to work to the fullest capacity in a healthy environment, expand my knowledge and work for the progress of the Organization.
+                {personalInfo?.professionalPhilosophy}
               </p>
             </Card>
           </div>
@@ -165,7 +202,7 @@ export default function AboutPage() {
               subtitle="Active member of prestigious professional organizations"
             />
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {professionalMemberships.map((membership, index) => (
+              {memberships.map((membership, index) => (
                 <Card key={index} delay={index * 0.1}>
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0">

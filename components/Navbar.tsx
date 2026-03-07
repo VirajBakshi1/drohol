@@ -14,6 +14,7 @@ const navLinks = [
   { href: '/awards', label: 'Awards' },
   { href: '/leadership', label: 'Leadership' },
   { href: '/guidance', label: 'Students' },
+  { href: '/gallery', label: 'Gallery' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -30,14 +31,20 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const isHome = pathname === '/';
+
   return (
     <motion.nav
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled
-          ? 'bg-white/20 backdrop-blur-2xl border-b border-white/20 shadow-2xl py-3 mt-2 mx-4 rounded-2xl'
-          : 'bg-white/15 backdrop-blur-2xl py-6 mt-4 mx-4 rounded-2xl border border-white/30'
+        isHome
+          ? isScrolled
+            ? 'bg-white border-b border-gray-200 shadow-md py-3 mt-2 mx-4 rounded-2xl'
+            : 'bg-white py-6 mt-4 mx-4 rounded-2xl border border-gray-200 shadow-sm'
+          : isScrolled
+            ? 'bg-white/20 backdrop-blur-2xl border-b border-white/20 shadow-2xl py-3 mt-2 mx-4 rounded-2xl'
+            : 'bg-white/15 backdrop-blur-2xl py-6 mt-4 mx-4 rounded-2xl border border-white/30'
       }`}
     >
       <div className="container mx-auto px-4">

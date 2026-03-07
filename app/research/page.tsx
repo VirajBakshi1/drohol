@@ -1,23 +1,95 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FlaskConical, FileCheck, Trophy, IndianRupee, FileText } from 'lucide-react';
 import { AnimatedSection, SectionHeader } from '@/components/ui/AnimatedSection';
 import { Card } from '@/components/ui/Card';
 import SearchBar from '@/components/ui/SearchBar';
-import { projectsCompleted, projectsOngoing, phdCompleted, phdOngoing, patents } from '@/data/researchData';
-import { grants } from '@/data/resumeData';
+
+interface ResearchProject {
+  _id: string;
+  title: string;
+  fundingAgency: string;
+  amount: string;
+  startDate: string;
+  endDate?: string;
+  status: 'Completed' | 'Ongoing';
+  location?: string;
+}
+
+interface PhDStudent {
+  _id: string;
+  title: string;
+  scholar: string;
+  university: string;
+  awardDate?: string;
+  fellowship?: string;
+  status: 'Completed' | 'In Progress';
+}
+
+interface Patent {
+  _id: string;
+  title: string;
+  applicationNumber: string;
+  applicationDate: string;
+  number?: string;
+  grantDate?: string;
+  status: 'Awarded' | 'Filed';
+}
+
+interface Grant {
+  _id: string;
+  source: string;
+  amount: string;
+  purpose: string;
+  year: string;
+}
 
 export default function ResearchPage() {
   const [activeTab, setActiveTab] = useState<'projects' | 'phd' | 'patents' | 'grants'>('projects');
+  const [loading, setLoading] = useState(true);
 
-  // State for filtered data
-  const [filteredProjectsCompleted, setFilteredProjectsCompleted] = useState(projectsCompleted);
-  const [filteredProjectsOngoing, setFilteredProjectsOngoing] = useState(projectsOngoing);
-  const [filteredPhd, setFilteredPhd] = useState([...phdCompleted, ...phdOngoing]);
-  const [filteredPatents, setFilteredPatents] = useState([...patents.awarded, ...patents.filed]);
-  const [filteredGrants, setFilteredGrants] = useState(grants);
+  const [allProjects, setAllProjects] = useState<ResearchProject[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<ResearchProject[]>([]);
+
+  const [allPhd, setAllPhd] = useState<PhDStudent[]>([]);
+  const [filteredPhd, setFilteredPhd] = useState<PhDStudent[]>([]);
+
+  const [allPatents, setAllPatents] = useState<Patent[]>([]);
+  const [filteredPatents, setFilteredPatents] = useState<Patent[]>([]);
+
+  const [allGrants, setAllGrants] = useState<Grant[]>([]);
+  const [filteredGrants, setFilteredGrants] = useState<Grant[]>([]);
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/research/projects').then((r) => r.json()),
+      fetch('/api/research/phd').then((r) => r.json()),
+      fetch('/api/research/patents').then((r) => r.json()),
+      fetch('/api/leadership/grants').then((r) => r.json()),
+    ])
+      .then(([projects, phd, patents, grants]) => {
+        setAllProjects(projects);
+        setFilteredProjects(projects);
+        setAllPhd(phd);
+        setFilteredPhd(phd);
+        setAllPatents(patents);
+        setFilteredPatents(patents);
+        setAllGrants(grants);
+        setFilteredGrants(grants);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-12">
@@ -44,18 +116,15 @@ export default function ResearchPage() {
         {/* Search Bar */}
         {activeTab === 'projects' && (
           <SearchBar
-            data={[...projectsCompleted, ...projectsOngoing]}
-            onSearch={(filtered) => {
-              setFilteredProjectsCompleted(filtered.filter(p => projectsCompleted.includes(p)));
-              setFilteredProjectsOngoing(filtered.filter(p => projectsOngoing.includes(p)));
-            }}
+            data={allProjects}
+            onSearch={setFilteredProjects}
             searchFields={['title', 'fundingAgency']}
             placeholder="Search research projects by title or funding agency..."
           />
         )}
         {activeTab === 'phd' && (
           <SearchBar
-            data={[...phdCompleted, ...phdOngoing]}
+            data={allPhd}
             onSearch={setFilteredPhd}
             searchFields={['title', 'scholar', 'university']}
             placeholder="Search PhD by title, scholar name, or university..."
@@ -63,7 +132,7 @@ export default function ResearchPage() {
         )}
         {activeTab === 'patents' && (
           <SearchBar
-            data={[...patents.awarded, ...patents.filed]}
+            data={allPatents}
             onSearch={setFilteredPatents}
             searchFields={['title', 'number', 'applicationNumber']}
             placeholder="Search patents by title or patent number..."
@@ -71,7 +140,7 @@ export default function ResearchPage() {
         )}
         {activeTab === 'grants' && (
           <SearchBar
-            data={grants}
+            data={allGrants}
             onSearch={setFilteredGrants}
             searchFields={['source', 'purpose']}
             placeholder="Search grants by source or purpose..."
@@ -90,7 +159,7 @@ export default function ResearchPage() {
               ].map(({ key, label, icon: Icon }) => (
                 <button
                   key={key}
-                  onClick={() => setActiveTab(key as any)}
+                  onClick={() => setActiveTab(key as typeof activeTab)}
                   className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium transition-all duration-300 ${
                     activeTab === key
                       ? 'bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 text-white shadow-lg hover:shadow-xl hover:scale-105'
@@ -109,12 +178,11 @@ export default function ResearchPage() {
         {activeTab === 'projects' && (
           <AnimatedSection>
             <div className="max-w-6xl mx-auto space-y-12">
-              {/* Completed Projects */}
               <div>
-                <SectionHeader title="Completed Research Projects" />
+                <SectionHeader title={`Completed Research Projects (${allProjects.filter((p) => p.status === 'Completed').length})`} />
                 <div className="space-y-6">
-                  {filteredProjectsCompleted.map((project, index) => (
-                    <Card key={index} delay={index * 0.1}>
+                  {filteredProjects.filter((p) => p.status === 'Completed').map((project, index) => (
+                    <Card key={project._id} delay={index * 0.1}>
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center flex-shrink-0">
                           <FileCheck className="text-white" size={24} />
@@ -123,15 +191,9 @@ export default function ResearchPage() {
                           <h3 className="font-semibold text-gray-900 mb-2">{project.title}</h3>
                           <p className="text-sm text-gray-600 mb-2">{project.fundingAgency}</p>
                           <div className="flex flex-wrap gap-2">
-                            <span className="text-xs font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">
-                              {project.status}
-                            </span>
-                            <span className="text-xs font-medium text-primary-600 bg-primary-50 px-3 py-1 rounded-full">
-                              {project.amount}
-                            </span>
-                            <span className="text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-                              {project.startDate} - {project.endDate}
-                            </span>
+                            <span className="text-xs font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">{project.status}</span>
+                            <span className="text-xs font-medium text-primary-600 bg-primary-50 px-3 py-1 rounded-full">{project.amount}</span>
+                            <span className="text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full">{project.startDate} - {project.endDate}</span>
                           </div>
                         </div>
                       </div>
@@ -139,13 +201,11 @@ export default function ResearchPage() {
                   ))}
                 </div>
               </div>
-
-              {/* Ongoing Projects */}
               <div>
-                <SectionHeader title="Ongoing Research Projects" />
+                <SectionHeader title={`Ongoing Research Projects (${allProjects.filter((p) => p.status === 'Ongoing').length})`} />
                 <div className="space-y-6">
-                  {filteredProjectsOngoing.map((project, index) => (
-                    <Card key={index} delay={index * 0.1}>
+                  {filteredProjects.filter((p) => p.status === 'Ongoing').map((project, index) => (
+                    <Card key={project._id} delay={index * 0.1}>
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0">
                           <FlaskConical className="text-white" size={24} />
@@ -153,19 +213,11 @@ export default function ResearchPage() {
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-900 mb-2">{project.title}</h3>
                           <p className="text-sm text-gray-600 mb-2">{project.fundingAgency}</p>
-                          {project.location && (
-                            <p className="text-sm text-gray-600 mb-2">Location: {project.location}</p>
-                          )}
+                          {project.location && <p className="text-sm text-gray-600 mb-2">Location: {project.location}</p>}
                           <div className="flex flex-wrap gap-2">
-                            <span className="text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-                              {project.status}
-                            </span>
-                            <span className="text-xs font-medium text-primary-600 bg-primary-50 px-3 py-1 rounded-full">
-                              {project.amount}
-                            </span>
-                            <span className="text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-                              Started: {project.startDate}
-                            </span>
+                            <span className="text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">{project.status}</span>
+                            <span className="text-xs font-medium text-primary-600 bg-primary-50 px-3 py-1 rounded-full">{project.amount}</span>
+                            <span className="text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full">Started: {project.startDate}</span>
                           </div>
                         </div>
                       </div>
@@ -181,40 +233,31 @@ export default function ResearchPage() {
         {activeTab === 'phd' && (
           <AnimatedSection>
             <div className="max-w-6xl mx-auto space-y-12">
-              {/* Completed PhD */}
               <div>
-                <SectionHeader title="PhD Completed (3)" />
+                <SectionHeader title={`PhD Completed (${allPhd.filter((p) => p.status === 'Completed').length})`} />
                 <div className="grid md:grid-cols-2 gap-6">
-                  {filteredPhd.filter(p => phdCompleted.includes(p)).map((phd, index) => (
-                    <Card key={index} delay={index * 0.1}>
+                  {filteredPhd.filter((p) => p.status === 'Completed').map((phd, index) => (
+                    <Card key={phd._id} delay={index * 0.1}>
                       <h3 className="font-semibold text-gray-900 mb-2">{phd.title}</h3>
                       <p className="text-sm text-gray-700 mb-1">Scholar: {phd.scholar}</p>
                       <p className="text-sm text-gray-600 mb-2">{phd.university}</p>
                       {phd.fellowship && (
-                        <p className="text-xs text-indigo-600 bg-indigo-50 px-3 py-1 rounded inline-block mb-2">
-                          {phd.fellowship}
-                        </p>
+                        <p className="text-xs text-indigo-600 bg-indigo-50 px-3 py-1 rounded inline-block mb-2">{phd.fellowship}</p>
                       )}
-                      <span className="text-xs font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">
-                        Awarded: {phd.awardDate}
-                      </span>
+                      <span className="text-xs font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">Awarded: {phd.awardDate}</span>
                     </Card>
                   ))}
                 </div>
               </div>
-
-              {/* Ongoing PhD */}
               <div>
-                <SectionHeader title="PhD In Progress (4)" />
+                <SectionHeader title={`PhD In Progress (${allPhd.filter((p) => p.status === 'In Progress').length})`} />
                 <div className="grid md:grid-cols-2 gap-6">
-                  {filteredPhd.filter(p => phdOngoing.includes(p)).map((phd, index) => (
-                    <Card key={index} delay={index * 0.1}>
+                  {filteredPhd.filter((p) => p.status === 'In Progress').map((phd, index) => (
+                    <Card key={phd._id} delay={index * 0.1}>
                       <h3 className="font-semibold text-gray-900 mb-2">{phd.title}</h3>
                       <p className="text-sm text-gray-700 mb-1">Scholar: {phd.scholar}</p>
                       <p className="text-sm text-gray-600 mb-2">{phd.university}</p>
-                      <span className="text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-                        {phd.status}
-                      </span>
+                      <span className="text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">{phd.status}</span>
                     </Card>
                   ))}
                 </div>
@@ -227,12 +270,11 @@ export default function ResearchPage() {
         {activeTab === 'patents' && (
           <AnimatedSection>
             <div className="max-w-6xl mx-auto space-y-12">
-              {/* Awarded Patents */}
               <div>
-                <SectionHeader title="Patents Awarded (2)" />
+                <SectionHeader title={`Patents Awarded (${allPatents.filter((p) => p.status === 'Awarded').length})`} />
                 <div className="space-y-6">
-                  {filteredPatents.filter(p => patents.awarded.includes(p)).map((patent, index) => (
-                    <Card key={index} delay={index * 0.1}>
+                  {filteredPatents.filter((p) => p.status === 'Awarded').map((patent, index) => (
+                    <Card key={patent._id} delay={index * 0.1}>
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center flex-shrink-0">
                           <Trophy className="text-white" size={24} />
@@ -245,22 +287,18 @@ export default function ResearchPage() {
                             <p>Application Date: {patent.applicationDate}</p>
                             <p>Grant Date: {patent.grantDate}</p>
                           </div>
-                          <span className="text-xs font-medium text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
-                            Awarded
-                          </span>
+                          <span className="text-xs font-medium text-amber-600 bg-amber-50 px-3 py-1 rounded-full">Awarded</span>
                         </div>
                       </div>
                     </Card>
                   ))}
                 </div>
               </div>
-
-              {/* Filed Patents */}
               <div>
-                <SectionHeader title="Patents Filed (2)" />
+                <SectionHeader title={`Patents Filed (${allPatents.filter((p) => p.status === 'Filed').length})`} />
                 <div className="space-y-6">
-                  {filteredPatents.filter(p => patents.filed.includes(p)).map((patent, index) => (
-                    <Card key={index} delay={index * 0.1}>
+                  {filteredPatents.filter((p) => p.status === 'Filed').map((patent, index) => (
+                    <Card key={patent._id} delay={index * 0.1}>
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                           <FileText className="text-white" size={24} />
@@ -271,9 +309,7 @@ export default function ResearchPage() {
                             <p>Application No: {patent.applicationNumber}</p>
                             <p>Application Date: {patent.applicationDate}</p>
                           </div>
-                          <span className="text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-                            {patent.status}
-                          </span>
+                          <span className="text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">{patent.status}</span>
                         </div>
                       </div>
                     </Card>
@@ -288,13 +324,10 @@ export default function ResearchPage() {
         {activeTab === 'grants' && (
           <AnimatedSection>
             <div className="max-w-6xl mx-auto">
-              <SectionHeader
-                title="Research Grants & Funding"
-                subtitle="Total funding received: ₹3+ Crores"
-              />
+              <SectionHeader title="Research Grants & Funding" subtitle="Total funding received: ₹3+ Crores" />
               <div className="space-y-6">
                 {filteredGrants.map((grant, index) => (
-                  <Card key={index} delay={index * 0.1}>
+                  <Card key={grant._id} delay={index * 0.1}>
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center flex-shrink-0">
                         <IndianRupee className="text-white" size={24} />
@@ -305,9 +338,7 @@ export default function ResearchPage() {
                           <span className="text-lg font-bold text-green-600">{grant.amount}</span>
                         </div>
                         <p className="text-sm text-gray-600 mb-2">{grant.purpose}</p>
-                        <span className="text-xs font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">
-                          {grant.year}
-                        </span>
+                        <span className="text-xs font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">{grant.year}</span>
                       </div>
                     </div>
                   </Card>
@@ -320,3 +351,4 @@ export default function ResearchPage() {
     </div>
   );
 }
+

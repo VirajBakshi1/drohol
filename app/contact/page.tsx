@@ -1,12 +1,20 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, MapPin, Phone, Globe } from 'lucide-react';
 import { AnimatedSection, SectionHeader } from '@/components/ui/AnimatedSection';
 import { Card } from '@/components/ui/Card';
-import { personalInfo } from '@/data/resumeData';
+
+interface PersonalInfo { name: string; designation: string; institution: string; email: string[]; summary: string; }
 
 export default function ContactPage() {
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfo | null>(null);
+
+  useEffect(() => {
+    fetch('/api/personal-info').then((r) => r.json()).then(setPersonalInfo);
+  }, []);
+
   return (
     <div className="min-h-screen py-12">
       <div className="container mx-auto px-4">
@@ -41,13 +49,13 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-2 text-lg">Address</h3>
                     <p className="text-gray-700 leading-relaxed">
-                      {personalInfo.designation}
+                      {personalInfo?.designation}
                     </p>
                     <p className="text-gray-700 leading-relaxed">
                       Department of Mechanical Engineering
                     </p>
                     <p className="text-gray-700 leading-relaxed">
-                      {personalInfo.institution}
+                      {personalInfo?.institution}
                     </p>
                     <p className="text-gray-700 leading-relaxed">
                       Shivajinagar, Pune - 411005
@@ -67,7 +75,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-3 text-lg">Email</h3>
-                    {personalInfo.email.map((email, index) => (
+                    {personalInfo?.email?.map((email, index) => (
                       <a
                         key={index}
                         href={`mailto:${email}`}
@@ -118,10 +126,10 @@ export default function ContactPage() {
 
           {/* Professional Summary */}
           <AnimatedSection delay={0.3}>
-            <Card>
+            <Card className='mt-5'>
               <h3 className="font-semibold text-gray-900 mb-3 text-lg">About</h3>
               <p className="text-gray-700 leading-relaxed mb-4">
-                {personalInfo.summary}
+                {personalInfo?.summary}
               </p>
               <div className="grid md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
                 <div>

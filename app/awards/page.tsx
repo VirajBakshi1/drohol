@@ -1,12 +1,48 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy } from 'lucide-react';
 import { AnimatedSection, SectionHeader } from '@/components/ui/AnimatedSection';
 import { AwardCard } from '@/components/ui/Card';
-import { internationalAwards, nationalAwards, instituteAwards } from '@/data/awardsData';
+
+interface AwardData {
+  _id: string;
+  title: string;
+  year: string;
+  organization: string;
+  description?: string;
+  category: 'international' | 'national' | 'institute';
+}
 
 export default function AwardsPage() {
+  const [international, setInternational] = useState<AwardData[]>([]);
+  const [national, setNational] = useState<AwardData[]>([]);
+  const [institute, setInstitute] = useState<AwardData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/awards?category=international').then((r) => r.json()),
+      fetch('/api/awards?category=national').then((r) => r.json()),
+      fetch('/api/awards?category=institute').then((r) => r.json()),
+    ])
+      .then(([intl, natl, inst]) => {
+        setInternational(intl);
+        setNational(natl);
+        setInstitute(inst);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen py-12">
       <div className="container mx-auto px-4">
@@ -37,7 +73,7 @@ export default function AwardsPage() {
             className="glass-card text-center"
           >
             <Trophy className="mx-auto text-amber-600 mb-2" size={40} />
-            <div className="text-3xl font-bold gradient-text">{internationalAwards.length}</div>
+            <div className="text-3xl font-bold gradient-text">{international.length}</div>
             <div className="text-sm text-gray-600">International</div>
           </motion.div>
           <motion.div
@@ -47,7 +83,7 @@ export default function AwardsPage() {
             className="glass-card text-center"
           >
             <Trophy className="mx-auto text-primary-600 mb-2" size={40} />
-            <div className="text-3xl font-bold gradient-text">{nationalAwards.length}</div>
+            <div className="text-3xl font-bold gradient-text">{national.length}</div>
             <div className="text-sm text-gray-600">National</div>
           </motion.div>
           <motion.div
@@ -57,7 +93,7 @@ export default function AwardsPage() {
             className="glass-card text-center"
           >
             <Trophy className="mx-auto text-teal-600 mb-2" size={40} />
-            <div className="text-3xl font-bold gradient-text">{instituteAwards.length}</div>
+            <div className="text-3xl font-bold gradient-text">{institute.length}</div>
             <div className="text-sm text-gray-600">Institute Level</div>
           </motion.div>
         </div>
@@ -68,7 +104,7 @@ export default function AwardsPage() {
             <div>
               <SectionHeader title="International Awards" />
               <div className="space-y-4">
-                {internationalAwards.map((award, index) => (
+                {international.map((award, index) => (
                   <AwardCard
                     key={index}
                     title={award.title}
@@ -85,7 +121,7 @@ export default function AwardsPage() {
             <div>
               <SectionHeader title="National Awards" />
               <div className="space-y-4">
-                {nationalAwards.map((award, index) => (
+                {national.map((award, index) => (
                   <AwardCard
                     key={index}
                     title={award.title}
@@ -102,7 +138,7 @@ export default function AwardsPage() {
             <div>
               <SectionHeader title="Institute Level Awards" />
               <div className="space-y-4">
-                {instituteAwards.map((award, index) => (
+                {institute.map((award, index) => (
                   <AwardCard
                     key={index}
                     title={award.title}
