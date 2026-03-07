@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
-import type { Model, Document } from 'mongoose';
+import type { Model } from 'mongoose';
 
-type MongoModel = Model<Document>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MongoModel = Model<any>;
 
 /** GET all documents from a collection, sorted by `order` asc */
 export async function getAll(Model: MongoModel, query: Record<string, unknown> = {}) {
